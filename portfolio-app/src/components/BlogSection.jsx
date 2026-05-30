@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
-export default function BlogSection({ articles, limit, onSelectArticle }) {
+export default function BlogSection({ articles, limit }) {
   const displayArticles = limit ? articles.slice(0, limit) : articles;
 
   return (
@@ -8,9 +9,9 @@ export default function BlogSection({ articles, limit, onSelectArticle }) {
       <div className="section-header">
         <h2 className="section-title">Latest writing</h2>
         {limit && articles.length > limit && (
-          <span className="section-link font-mono" style={{ cursor: 'pointer' }}>
-            Scroll to see more
-          </span>
+          <Link to="/blog" className="section-link font-mono">
+            View all posts
+          </Link>
         )}
       </div>
 
@@ -30,24 +31,18 @@ export default function BlogSection({ articles, limit, onSelectArticle }) {
                 </span>
               </div>
               
-              <h3 
-                className="blog-title" 
-                onClick={() => onSelectArticle(article)}
-              >
-                {article.title}
+              <h3 className="blog-title">
+                <Link to={`/blog/${article.id}`}>
+                  {article.title}
+                </Link>
               </h3>
               
               <p className="blog-excerpt">{article.excerpt}</p>
               
-              <button 
+              <Link 
+                to={`/blog/${article.id}`}
                 className="blog-read-more font-mono"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  outline: 'none',
-                  padding: 0
-                }}
-                onClick={() => onSelectArticle(article)}
+                style={{ display: 'inline-flex', alignItems: 'center' }}
               >
                 <span>Read article</span>
                 <svg 
@@ -60,11 +55,12 @@ export default function BlogSection({ articles, limit, onSelectArticle }) {
                   strokeWidth="2.5" 
                   strokeLinecap="round" 
                   strokeLinejoin="round"
+                  style={{ marginLeft: '0.35rem' }}
                 >
                   <path d="M7 7h10v10"></path>
                   <path d="M7 17 17 7"></path>
                 </svg>
-              </button>
+              </Link>
             </article>
           ))
         )}
