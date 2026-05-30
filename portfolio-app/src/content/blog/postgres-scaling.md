@@ -3,6 +3,7 @@ title: Optimizing Postgres Queries for Multi-Tenant Scale
 category: Engineering
 date: May 25, 2026
 readingTime: 2 min read
+draft: true
 excerpt: Exploring the details of index design, query optimization, and structural partition keys to scale multi-tenant databases past billions of rows without latency degradation.
 ---
 

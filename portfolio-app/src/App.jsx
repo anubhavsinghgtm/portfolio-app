@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import ProjectsGrid from './components/ProjectsGrid';
 import BlogSection from './components/BlogSection';
 import Footer from './components/Footer';
+import projects from './content/projects.json';
 
 // Dynamic Glob Import to dynamically resolve and fetch raw content of local Markdown files inside src/content/blog/
 const blogFiles = import.meta.glob('/src/content/blog/*.md', { query: '?raw', import: 'default', eager: true });
@@ -47,6 +48,7 @@ function parseMarkdownPost(rawText, filepath) {
     category: metadata.category || 'General',
     date: metadata.date || 'Recent',
     readingTime: metadata.readingTime || '3 min read',
+    draft: metadata.draft || 'false',
     excerpt: metadata.excerpt || '',
     content: content.trim()
   };
@@ -56,7 +58,9 @@ function parseMarkdownPost(rawText, filepath) {
 const articles = Object.keys(blogFiles).map((path) => {
   const rawContent = blogFiles[path];
   return parseMarkdownPost(rawContent, path);
-}).sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort chronologically (latest first)
+})
+.filter(article => article.draft !== 'true') // Filter out drafts
+.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort chronologically (latest first)
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState('home');
@@ -67,32 +71,8 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [currentTab, selectedArticle]);
 
-  const projects = [
-    {
-      id: 'supernova',
-      title: 'Supernova API Gateway',
-      description: 'A high-performance API gateway engineered in Rust and Actix-Web. Features custom-designed sub-millisecond dynamic rate limiting, token bucket algorithms, and zero-allocation reverse proxying.',
-      tags: ['Rust', 'Actix-Web', 'Docker', 'Redis'],
-      github: 'https://github.com',
-      live: 'https://example.com'
-    },
-    {
-      id: 'omnisearch',
-      title: 'Omnisearch Engine',
-      description: 'An ultra-fast, distributed full-text search engine built with FastAPI and PostgreSQL. Implements custom lexical scanners, trigram indexes, and rank-ordered BM25 query evaluations.',
-      tags: ['FastAPI', 'PostgreSQL', 'Python', 'Elasticsearch'],
-      github: 'https://github.com',
-      live: 'https://example.com'
-    },
-    {
-      id: 'flowstream',
-      title: 'FlowStream Real-time Pipelines',
-      description: 'Scalable streaming analytics pipeline processing high-throughput web telemetry. Leverages Apache Spark, Kafka cluster, and AWS S3 data lakes for instant sessionized metrics aggregation.',
-      tags: ['Apache Spark', 'Kafka', 'AWS S3', 'Scala'],
-      github: 'https://github.com',
-      live: ''
-    }
-  ];
+  // Filter out draft projects so only published projects appear on the live site
+  const activeProjects = projects.filter(project => project.draft !== true);
 
   const handleSelectArticle = (article) => {
     setSelectedArticle(article);
@@ -169,7 +149,7 @@ export default function App() {
             {currentTab === 'home' && (
               <>
                 <Hero setCurrentTab={setCurrentTab} />
-                <ProjectsGrid projects={projects} limit={2} />
+                <ProjectsGrid projects={activeProjects} limit={2} />
                 
                 <div style={{ marginTop: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
                   <button 
@@ -224,7 +204,7 @@ export default function App() {
             )}
 
             {currentTab === 'projects' && (
-              <ProjectsGrid projects={projects} />
+              <ProjectsGrid projects={activeProjects} />
             )}
 
             {currentTab === 'blog' && (

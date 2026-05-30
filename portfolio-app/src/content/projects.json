@@ -1,0 +1,11 @@
+[
+  {
+    "id": "supernova",
+    "title": "Supernova API Gateway",
+    "description": "A high-performance API gateway engineered in Rust and Actix-Web. Features custom-designed sub-millisecond dynamic rate limiting, token bucket algorithms, and zero-allocation reverse proxying.",
+    "tags": ["Rust", "Actix-Web", "Docker", "Redis"],
+    "github": "https://github.com",
+    "live": "https://example.com",
+    "draft": true
+  }
+]
