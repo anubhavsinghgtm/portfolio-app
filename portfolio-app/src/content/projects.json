@@ -1,11 +1,54 @@
 [
   {
-    "id": "supernova",
-    "title": "Supernova API Gateway",
-    "description": "A high-performance API gateway engineered in Rust and Actix-Web. Features custom-designed sub-millisecond dynamic rate limiting, token bucket algorithms, and zero-allocation reverse proxying.",
-    "tags": ["Rust", "Actix-Web", "Docker", "Redis"],
-    "github": "https://github.com",
-    "live": "https://example.com",
-    "draft": true
+    "id": "fluxora",
+    "title": "Fluxora",
+    "description": "Fluxora is an AI-powered analytics platform that converts natural language into SQL queries, enabling users to interact with databases without writing SQL. Built with FastAPI and PostgreSQL, it focuses on reliability through schema-aware prompting, query validation, testing, and secure database access.",
+    "tags": [
+      "FastAPI",
+      "Python",
+      "PostgreSQL",
+      "Gemini",
+      "Supabase",
+      "Streamlit",
+      "Docker",
+      "Pytest"
+    ],
+    "github": "https://github.com/anubhavsinghgtm/fluxora",
+    "live": "https://anubhav-fluxora.streamlit.app/",
+    "draft": false
+  },
+  {
+    "id": "pulse",
+    "title": "PULSE",
+    "description": "PULSE is a three-phase AI framework for analyzing vaccine hesitancy on Twitter. It combines multi-label tweet classification using Nested LSTM, category-wise summarization with LLMs, and explainable AI through LIME to uncover key narratives and improve model transparency.",
+    "tags": [
+      "Python",
+      "PyTorch",
+      "NLSTM",
+      "Twitter-XLM-RoBERTa",
+      "LIME",
+      "LLM",
+      "NLP",
+      "PSO",
+      "Transformers",
+      "Multi-Label Classification"
+    ],
+    "github": "https://github.com/anubhavsinghgtm/pulse",
+    "live": "",
+    "draft": false
+  },
+  {
+    "id": "aayronix-hub",
+    "title": "Aayronix Hub",
+    "description": "Aayronix Hub is a modern corporate website developed for a leading IT consultancy and staffing firm. The platform showcases their expertise in cloud computing, cybersecurity, AI/GenAI solutions, and global talent acquisition. Built with a multi-page architecture, it features a responsive and dynamic design, effectively highlighting their mission to empower enterprises through scalable technology solutions and strategic workforce augmentation.",
+    "tags": [
+      "Astro",
+      "HTML",
+      "CSS",
+      "JavaScript"
+    ],
+    "github": "",
+    "live": "https://aayronixhub.com",
+    "draft": false
   }
 ]

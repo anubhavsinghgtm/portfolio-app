@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Hero({ setCurrentTab }) {
   const technologies = [
-    'FastAPI', 'Postgres', 'Spark', 'AWS', 'React', 'Python', 'Docker', 'GraphQL'
+    'Python', 'FastAPI', 'PostgreSQL', 'PyTorch', 'Gemini', 'Astro', 'React', 'Docker'
   ];
 
   return (
@@ -11,15 +11,15 @@ export default function Hero({ setCurrentTab }) {
 
       <h1 className="hero-title">
         Anubhav Singh.<br />
-        <span className="hero-subtitle">Backend &amp; data engineer.</span>
+        <span className="hero-subtitle">AI &amp; Backend Engineer.</span>
       </h1>
 
       <p className="hero-description">
-        I build dependable backends and data pipelines — designing APIs with{' '}
-        <span className="hero-highlight">FastAPI</span>, modeling data in{' '}
-        <span className="hero-highlight">Postgres</span>, processing at scale with{' '}
-        <span className="hero-highlight">Spark</span>, and shipping on{' '}
-        <span className="hero-highlight">AWS</span>. This corner of the internet is also where I keep notes on what I'm learning and the occasional thought about life.
+        I engineer AI-powered analytics platforms and deep learning classification systems — orchestrating custom{' '}
+        <span className="hero-highlight">LLM flows</span> with Gemini, building robust{' '}
+        <span className="hero-highlight">FastAPI</span> microservices, training{' '}
+        <span className="hero-highlight">PyTorch</span> models, and designing modern high-performance web interfaces with{' '}
+        <span className="hero-highlight">Astro</span> and React.
       </p>
 
       <div className="tech-pills">

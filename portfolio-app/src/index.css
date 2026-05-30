@@ -710,3 +710,101 @@
   font-size: 0.75rem;
   color: var(--muted-foreground);
 }
+
+/* ==========================================
+   Expertise Section Styling
+   ========================================== */
+.expertise-section {
+  margin-top: 5rem;
+  width: 100%;
+}
+
+.expertise-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .expertise-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.expertise-card {
+  position: relative;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.32, 1);
+  overflow: hidden;
+  height: 100%;
+}
+
+/* Hover glowing backdrop inside expertise cards */
+.expertise-card::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 100%;
+  transform: translate(-50%, -50%);
+  width: 130px;
+  height: 130px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, rgba(9, 10, 15, 0) 70%);
+  z-index: 0;
+  pointer-events: none;
+  transition: all 0.5s ease;
+  opacity: 0;
+}
+
+.expertise-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transform: translateY(-2px);
+}
+
+.expertise-card:hover::before {
+  top: 10%;
+  left: 90%;
+  opacity: 1;
+}
+
+.expertise-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.expertise-icon-wrapper {
+  color: var(--accent); /* Hot Orange Icon */
+  margin-bottom: 1.25rem;
+}
+
+.expertise-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  stroke-width: 1.75;
+}
+
+.expertise-title {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: normal;
+  color: var(--foreground);
+  margin-bottom: 0.85rem;
+}
+
+.expertise-desc {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  line-height: 1.6;
+}

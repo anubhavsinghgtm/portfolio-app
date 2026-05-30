@@ -5,6 +5,7 @@ import ProjectsGrid from './components/ProjectsGrid';
 import BlogSection from './components/BlogSection';
 import Footer from './components/Footer';
 import projects from './content/projects.json';
+import Expertise from './components/Expertise';
 
 // Dynamic Glob Import to dynamically resolve and fetch raw content of local Markdown files inside src/content/blog/
 const blogFiles = import.meta.glob('/src/content/blog/*.md', { query: '?raw', import: 'default', eager: true });
@@ -149,6 +150,7 @@ export default function App() {
             {currentTab === 'home' && (
               <>
                 <Hero setCurrentTab={setCurrentTab} />
+                <Expertise />
                 <ProjectsGrid projects={activeProjects} limit={2} />
                 
                 <div style={{ marginTop: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
