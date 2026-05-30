@@ -5,7 +5,6 @@ export default function Navbar() {
   const location = useLocation();
   
   const tabs = [
-    { path: '/', label: 'Home' },
     { path: '/projects', label: 'Projects' },
     { path: '/blog', label: 'Writing' }
   ];
