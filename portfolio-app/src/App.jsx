@@ -127,7 +127,7 @@ export default function App() {
               <>
                 <Hero />
                 <Expertise />
-                <ProjectsGrid projects={activeProjects} limit={2} />
+                <ProjectsGrid projects={activeProjects} limit={3} />
                 
                 <div style={{ marginTop: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
                   <Link 
@@ -142,7 +142,7 @@ export default function App() {
                   </Link>
                 </div>
 
-                <BlogSection articles={articles} limit={2} />
+                <BlogSection articles={articles} limit={3} />
                 
                 <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'flex-start' }}>
                   <Link 
