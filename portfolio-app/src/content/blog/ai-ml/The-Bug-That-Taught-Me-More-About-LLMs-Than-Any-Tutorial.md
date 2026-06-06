@@ -131,6 +131,6 @@ The only way to catch it is to instrument everything, log what the model is actu
 
 I'm building this entire project in public, Fluxora - an AI analytics assistant that converts plain English to SQL and returns insights from a real database.
 
-🔗 Live demo: https://anubhav-fluxora.streamlit.app/
+🔗 Live demo: [https://anubhav-fluxora.streamlit.app/](https://anubhav-fluxora.streamlit.app/)
 
 If you're on a similar learning path, follow along. I write about what actually breaks, not just what works.
