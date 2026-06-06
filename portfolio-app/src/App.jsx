@@ -8,8 +8,8 @@ import Footer from './components/Footer';
 import projects from './content/projects.json';
 import Expertise from './components/Expertise';
 
-// Dynamic Glob Import to dynamically resolve and fetch raw content of local Markdown files inside src/content/blog/
-const blogFiles = import.meta.glob('/src/content/blog/*.md', { query: '?raw', import: 'default', eager: true });
+// Dynamic Glob Import to dynamically resolve and fetch raw content of local Markdown files inside src/content/blog/ (including subdirectories)
+const blogFiles = import.meta.glob('/src/content/blog/**/*.md', { query: '?raw', import: 'default', eager: true });
 
 // Frontmatter Metadata parser for standard Git-based Markdown pipelines
 function parseMarkdownPost(rawText, filepath) {
@@ -269,50 +269,190 @@ function ArticleReader({ articles }) {
 // Simple Markdown Formatter Helper Function
 function formatMarkdown(content) {
   if (!content) return '';
-  
-  return content
-    // Paragraph spaces
-    .trim()
-    // Headers (H2, H3)
+
+  const codeBlocks = [];
+  const inlineCodes = [];
+
+  // 1. Temporarily extract code blocks (triple backticks) to prevent formatting within them
+  let formatted = content.replace(/```(\w*)\s*\r?\n([\s\S]*?)\r?\n```/g, (match, lang, code) => {
+    const placeholder = `<!--CODE_BLOCK_PLACEHOLDER_${codeBlocks.length}-->`;
+    const cleanCode = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    const codeTag = lang 
+      ? `<code class="language-${lang}">${cleanCode}</code>` 
+      : `<code>${cleanCode}</code>`;
+    codeBlocks.push(`<pre>${codeTag}</pre>`);
+    return placeholder;
+  });
+
+  // 2. Temporarily extract inline code (single backticks) to prevent formatting within them
+  formatted = formatted.replace(/`([^`]+)`/g, (match, code) => {
+    const placeholder = `<!--INLINE_CODE_PLACEHOLDER_${inlineCodes.length}-->`;
+    const cleanCode = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    inlineCodes.push(`<code>${cleanCode}</code>`);
+    return placeholder;
+  });
+
+  // 3. Convert Markdown syntax to HTML
+
+  // Headers (H2, H3)
+  formatted = formatted
     .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-    // Alerts (Notes/Warnings)
-    .replace(/^> \[!NOTE\]\s*(.*$)/gim, '<blockquote><strong>Note:</strong> $1</blockquote>')
-    .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
-    // Code blocks with syntax formatting placeholders
-    .replace(/```sql([\s\S]*?)```/gim, '<pre><code class="language-sql">$1</code></pre>')
-    .replace(/```javascript([\s\S]*?)```/gim, '<pre><code class="language-javascript">$1</code></pre>')
-    .replace(/```python([\s\S]*?)```/gim, '<pre><code class="language-python">$1</code></pre>')
-    .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
-    // Inline code tags
-    .replace(/`([^`]+)`/gim, '<code>$1</code>')
-    // Tables formatting helper (basic regex)
-    .replace(/\| (.*) \|/g, (match, p1) => {
-      const cells = p1.split(' | ');
-      const isHeader = match.includes('---');
-      if (isHeader) return '';
-      return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
-    })
-    // Wrap tables
-    .replace(/(<tr>[\s\S]*?<\/tr>)/g, '<table class="article-table">$1</table>')
-    // Fix multiple tables consolidation
-    .replace(/<\/table>\s*<table class="article-table">/g, '')
-    // Bold tags
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    // Italic tags
-    .replace(/_([^_]+)_/g, '<em>$1</em>')
-    // Lists formatting
-    .replace(/^\* (.*$)/gim, '<li>$1</li>')
-    .replace(/^- (.*$)/gim, '<li>$1</li>')
-    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
-    .replace(/<\/ul>\s*<ul>/g, '')
-    // Convert newlines to paragraphs/breaks
-    .split('\n\n')
-    .map(para => {
-      if (para.trim().startsWith('<h') || para.trim().startsWith('<pre') || para.trim().startsWith('<blockquote') || para.trim().startsWith('<table') || para.trim().startsWith('<ul')) {
-        return para;
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>');
+
+  // Blockquotes and Note alerts
+  const bqLines = formatted.split('\n');
+  let inBq = false;
+  let bqItems = [];
+  const bqProcessed = [];
+  
+  for (let i = 0; i < bqLines.length; i++) {
+    const line = bqLines[i];
+    const noteMatch = line.match(/^>\s+\[!NOTE\]\s*(.*)$/i);
+    const regularMatch = line.match(/^>\s*(.*)$/);
+    if (noteMatch) {
+      if (inBq) {
+        bqProcessed.push(`<blockquote>${bqItems.join('<br/>')}</blockquote>`);
+        inBq = false;
       }
-      return para ? `<p>${para.replace(/\n/g, '<br/>')}</p>` : '';
+      bqProcessed.push(`<blockquote><strong>Note:</strong> ${noteMatch[1]}</blockquote>`);
+    } else if (regularMatch) {
+      if (!inBq) {
+        inBq = true;
+        bqItems = [];
+      }
+      bqItems.push(regularMatch[1]);
+    } else {
+      if (inBq) {
+        bqProcessed.push(`<blockquote>${bqItems.join('<br/>')}</blockquote>`);
+        inBq = false;
+      }
+      bqProcessed.push(line);
+    }
+  }
+  if (inBq) {
+    bqProcessed.push(`<blockquote>${bqItems.join('<br/>')}</blockquote>`);
+  }
+  formatted = bqProcessed.join('\n');
+
+  // Markdown links: [text](url)
+  formatted = formatted.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+  });
+
+  // Bold (**text** or __text__)
+  formatted = formatted.replace(/\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*/g, '<strong>$1</strong>');
+  formatted = formatted.replace(/__(?=\S)([\s\S]+?)(?<=\S)__/g, '<strong>$1</strong>');
+
+  // Italic (*text* or _text_)
+  formatted = formatted.replace(/\*(?=\S)([\s\S]+?)(?<=\S)\*/g, '<em>$1</em>');
+  formatted = formatted.replace(/(?<!\w)_(?=\S)([\s\S]+?)(?<=\S)_(?!\w)/g, '<em>$1</em>');
+
+  // Horizontal rules (--- or *** or ___ on their own line)
+  formatted = formatted.replace(/^[-*_]{3,}\s*$/gim, '<hr/>');
+
+  // Tables
+  const lines = formatted.split('\n');
+  let inTable = false;
+  let tableRows = [];
+  const processedLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('|') && line.endsWith('|')) {
+      if (!inTable) {
+        inTable = true;
+        tableRows = [];
+      }
+      if (line.includes('---')) {
+        continue;
+      }
+      const cells = line
+        .slice(1, -1)
+        .split('|')
+        .map(c => c.trim());
+      
+      const isHeaderRow = tableRows.length === 0 && i + 1 < lines.length && lines[i + 1].includes('---');
+      const cellTag = isHeaderRow ? 'th' : 'td';
+      const rowHtml = `<tr>${cells.map(c => `<${cellTag}>${c}</${cellTag}>`).join('')}</tr>`;
+      tableRows.push(rowHtml);
+    } else {
+      if (inTable) {
+        processedLines.push(`<table class="article-table">${tableRows.join('')}</table>`);
+        inTable = false;
+      }
+      processedLines.push(lines[i]);
+    }
+  }
+  if (inTable) {
+    processedLines.push(`<table class="article-table">${tableRows.join('')}</table>`);
+  }
+  formatted = processedLines.join('\n');
+
+  // Unordered Lists (- or *)
+  const listLines = formatted.split('\n');
+  let inList = false;
+  let listItems = [];
+  const listProcessed = [];
+
+  for (let i = 0; i < listLines.length; i++) {
+    const line = listLines[i];
+    const match = line.match(/^(\s*)[-*]\s+(.*)$/);
+    if (match) {
+      if (!inList) {
+        inList = true;
+        listItems = [];
+      }
+      listItems.push(`<li>${match[2]}</li>`);
+    } else {
+      if (inList) {
+        listProcessed.push(`<ul>${listItems.join('')}</ul>`);
+        inList = false;
+      }
+      listProcessed.push(line);
+    }
+  }
+  if (inList) {
+    listProcessed.push(`<ul>${listItems.join('')}</ul>`);
+  }
+  formatted = listProcessed.join('\n');
+
+  // Paragraph wrapping (split by double newlines)
+  formatted = formatted
+    .split(/\n\s*\n/)
+    .map(para => {
+      const trimmed = para.trim();
+      if (!trimmed) return '';
+      if (
+        trimmed.startsWith('<h') ||
+        trimmed.startsWith('<pre') ||
+        trimmed.startsWith('<blockquote') ||
+        trimmed.startsWith('<table') ||
+        trimmed.startsWith('<ul') ||
+        trimmed.startsWith('<hr') ||
+        trimmed.startsWith('<!--CODE_BLOCK_PLACEHOLDER')
+      ) {
+        return trimmed;
+      }
+      return `<p>${trimmed.replace(/\n/g, '<br/>')}</p>`;
     })
-    .join('');
+    .filter(Boolean)
+    .join('\n\n');
+
+  // 4. Restore inline code tags
+  inlineCodes.forEach((codeHtml, index) => {
+    formatted = formatted.replace(`<!--INLINE_CODE_PLACEHOLDER_${index}-->`, codeHtml);
+  });
+
+  // 5. Restore code block tags
+  codeBlocks.forEach((codeBlockHtml, index) => {
+    formatted = formatted.replace(`<!--CODE_BLOCK_PLACEHOLDER_${index}-->`, codeBlockHtml);
+  });
+
+  return formatted;
 }

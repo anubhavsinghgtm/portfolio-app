@@ -605,6 +605,24 @@
   color: #d1d5db;
 }
 
+.article-rich-content a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 0.2s ease;
+}
+
+.article-rich-content a:hover {
+  color: var(--accent);
+}
+
+.article-rich-content hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 3rem 0;
+  width: 100%;
+}
+
 .article-rich-content p {
   margin-bottom: 1.5rem;
 }
