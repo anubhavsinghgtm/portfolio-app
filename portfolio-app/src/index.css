@@ -598,6 +598,49 @@
   gap: 0.35rem;
 }
 
+.article-views {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted-foreground);
+  transition: color 0.2s ease, transform 0.1s ease;
+  padding: 0;
+  outline: none;
+}
+
+.like-btn:hover {
+  color: #ef4444; /* red-500 */
+}
+
+.like-btn:active {
+  transform: scale(0.9);
+}
+
+.like-btn.liked {
+  color: #ef4444;
+}
+
+.like-btn.liked svg {
+  fill: #ef4444;
+  animation: heartBeat 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.3); }
+  70% { transform: scale(0.85); }
+  100% { transform: scale(1); }
+}
+
 /* Markdown Reading Layout Styling */
 .article-rich-content {
   font-size: 1.1rem;
@@ -807,12 +850,6 @@
   margin-bottom: 1.25rem;
 }
 
-.expertise-icon {
-  width: 1.75rem;
-  height: 1.75rem;
-  stroke-width: 1.75;
-}
-
 .expertise-title {
   font-family: var(--font-serif);
   font-size: 1.4rem;
@@ -826,3 +863,257 @@
   color: var(--muted-foreground);
   line-height: 1.6;
 }
+
+/* ==========================================
+   Article Feedback & Mobile Floating Actions
+   ========================================== */
+.article-feedback-card {
+  margin-top: 4.5rem;
+  padding: 2.5rem 2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s ease;
+}
+
+.article-feedback-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.5;
+}
+
+.article-feedback-card:hover {
+  border-color: var(--border-hover);
+}
+
+.feedback-title {
+  font-family: var(--font-serif);
+  font-size: 1.8rem;
+  color: var(--foreground);
+  margin: 0;
+}
+
+.feedback-subtitle {
+  font-size: 0.95rem;
+  color: var(--muted-foreground);
+  max-width: 500px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.feedback-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.feedback-btn {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.01);
+  color: var(--foreground);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.feedback-btn svg {
+  transition: transform 0.2s ease, fill 0.2s ease;
+}
+
+.feedback-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--border-hover);
+  transform: translateY(-1px);
+}
+
+.feedback-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Like CTA Button states */
+.feedback-btn.like-cta:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.03);
+}
+
+.feedback-btn.like-cta.liked {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.feedback-btn.like-cta.liked svg {
+  fill: #ef4444;
+  animation: heartBeat 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Share CTA Button states */
+.feedback-btn.share-cta:hover {
+  color: var(--primary);
+  border-color: rgba(245, 158, 11, 0.3); /* amber-500 */
+  background: rgba(245, 158, 11, 0.03);
+}
+
+.feedback-btn.share-cta.copied {
+  color: #10b981; /* green-500 */
+  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.feedback-footer {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  padding-top: 1.25rem;
+}
+
+.feedback-back-link {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.feedback-back-link:hover {
+  color: var(--primary);
+}
+
+/* Mobile Floating Bar Styling */
+.mobile-floating-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: rgba(9, 10, 15, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 0.75rem 1.25rem;
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.32, 1), opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.mobile-floating-bar.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.floating-bar-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.floating-bar-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+  max-width: 65%;
+}
+
+.floating-bar-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.floating-bar-meta {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+}
+
+.floating-bar-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.floating-bar-actions button {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+  padding: 0;
+}
+
+.floating-bar-actions button svg {
+  transition: transform 0.15s ease;
+}
+
+.floating-bar-actions button:active {
+  transform: scale(0.92);
+}
+
+.floating-bar-actions .floating-like-btn {
+  border-radius: 9999px;
+  width: auto;
+  height: auto;
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  gap: 0.35rem;
+}
+
+.floating-bar-actions .floating-like-btn.liked {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.floating-bar-actions .floating-like-btn.liked svg {
+  fill: #ef4444;
+  animation: heartBeat 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floating-bar-actions .floating-share-btn.copied {
+  color: #10b981;
+  border-color: rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.05);
+}
+
+

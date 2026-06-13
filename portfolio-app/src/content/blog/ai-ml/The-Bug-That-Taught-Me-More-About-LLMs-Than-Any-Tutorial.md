@@ -2,7 +2,6 @@
 title: The Bug That Taught Me More About LLMs Than Any Tutorial
 category: AI & Machine Learning
 date: June 07, 2026
-readingTime: 4 min read
 draft: false
 excerpt: Debugging my AI analytics assistant Fluxora. The LLM just... stopped. Here's what I learned about prompt engineering, context length, and why LLM debugging is fundamentally different from traditional software.
 ---

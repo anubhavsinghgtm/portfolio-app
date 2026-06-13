@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -7,9 +7,19 @@ import BlogSection from './components/BlogSection';
 import Footer from './components/Footer';
 import projects from './content/projects.json';
 import Expertise from './components/Expertise';
+import { supabase } from './lib/supabaseClient';
 
 // Dynamic Glob Import to dynamically resolve and fetch raw content of local Markdown files inside src/content/blog/ (including subdirectories)
 const blogFiles = import.meta.glob('/src/content/blog/**/*.md', { query: '?raw', import: 'default', eager: true });
+
+// Helper to calculate reading time dynamically based on word count (avg 200 WPM)
+function calculateReadingTime(content) {
+  if (!content) return '1 min read';
+  const wordsPerMinute = 200;
+  const words = content.trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.ceil(words / wordsPerMinute);
+  return `${minutes} min read`;
+}
 
 // Frontmatter Metadata parser for standard Git-based Markdown pipelines
 function parseMarkdownPost(rawText, filepath) {
@@ -25,7 +35,7 @@ function parseMarkdownPost(rawText, filepath) {
       title: id.replace(/-/g, ' '),
       category: 'General',
       date: 'Recent',
-      readingTime: '3 min read',
+      readingTime: calculateReadingTime(rawText),
       draft: 'false',
       excerpt: '',
       content: rawText
@@ -50,7 +60,7 @@ function parseMarkdownPost(rawText, filepath) {
     title: metadata.title || id.replace(/-/g, ' '),
     category: metadata.category || 'General',
     date: metadata.date || 'Recent',
-    readingTime: metadata.readingTime || '3 min read',
+    readingTime: metadata.readingTime || calculateReadingTime(content),
     draft: metadata.draft || 'false',
     excerpt: metadata.excerpt || '',
     content: content.trim()
@@ -114,6 +124,98 @@ export default function App() {
   // Filter out draft projects so only published projects appear on the live site
   const activeProjects = projects.filter(project => project.draft !== true);
 
+  const [blogStats, setBlogStats] = useState({}); // { [articleId]: { views: 0, likes: 0 } }
+
+  // Fetch all stats on mount
+  useEffect(() => {
+    async function fetchStats() {
+      if (!supabase) return;
+      try {
+        const { data, error } = await supabase.from('blog_stats').select('*');
+        if (!error && data) {
+          const statsMap = {};
+          data.forEach(item => {
+            statsMap[item.id] = { views: item.views, likes: item.likes };
+          });
+          setBlogStats(statsMap);
+        }
+      } catch (err) {
+        console.error('Failed to fetch blog stats from Supabase:', err);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  // Secure functions to increment views and likes
+  const incrementView = async (articleId) => {
+    if (!supabase) {
+      // Fallback: local storage offline demo view increment
+      const localViews = parseInt(localStorage.getItem(`view_count_${articleId}`) || '0', 10) + 1;
+      localStorage.setItem(`view_count_${articleId}`, localViews.toString());
+      setBlogStats(prev => ({
+        ...prev,
+        [articleId]: {
+          views: localViews,
+          likes: prev[articleId]?.likes || 0
+        }
+      }));
+      return;
+    }
+
+    try {
+      const { error } = await supabase.rpc('increment_views', { article_id: articleId });
+      if (!error) {
+        setBlogStats(prev => ({
+          ...prev,
+          [articleId]: {
+            ...prev[articleId],
+            views: (prev[articleId]?.views || 0) + 1
+          }
+        }));
+      } else {
+        console.error('Error calling increment_views RPC:', error);
+      }
+    } catch (err) {
+      console.error('Failed to increment view count:', err);
+    }
+  };
+
+  const toggleLike = async (articleId, shouldLike) => {
+    if (!supabase) {
+      // Fallback: local storage offline demo like increment
+      const localLikes = Math.max(0, parseInt(localStorage.getItem(`like_count_${articleId}`) || '0', 10) + (shouldLike ? 1 : -1));
+      localStorage.setItem(`like_count_${articleId}`, localLikes.toString());
+      setBlogStats(prev => ({
+        ...prev,
+        [articleId]: {
+          views: prev[articleId]?.views || 0,
+          likes: localLikes
+        }
+      }));
+      return true;
+    }
+
+    try {
+      const rpcName = shouldLike ? 'increment_likes' : 'decrement_likes';
+      const { error } = await supabase.rpc(rpcName, { article_id: articleId });
+      if (!error) {
+        setBlogStats(prev => ({
+          ...prev,
+          [articleId]: {
+            ...prev[articleId],
+            likes: Math.max(0, (prev[articleId]?.likes || 0) + (shouldLike ? 1 : -1))
+          }
+        }));
+        return true;
+      } else {
+        console.error(`Error calling ${rpcName} RPC:`, error);
+      }
+    } catch (err) {
+      console.error('Failed to toggle like count:', err);
+    }
+    return false;
+  };
+
   return (
     <Router>
       <ScrollToTopAndSEO articles={articles} />
@@ -142,7 +244,7 @@ export default function App() {
                   </Link>
                 </div>
 
-                <BlogSection articles={articles} limit={3} />
+                <BlogSection articles={articles} stats={blogStats} limit={3} />
                 
                 <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'flex-start' }}>
                   <Link 
@@ -163,10 +265,17 @@ export default function App() {
             <Route path="/projects" element={<ProjectsGrid projects={activeProjects} />} />
 
             {/* Standalone Blog List Route */}
-            <Route path="/blog" element={<BlogSection articles={articles} />} />
+            <Route path="/blog" element={<BlogSection articles={articles} stats={blogStats} />} />
 
             {/* Dynamic Blog Article Reading Route */}
-            <Route path="/blog/:id" element={<ArticleReader articles={articles} />} />
+            <Route path="/blog/:id" element={
+              <ArticleReader 
+                articles={articles} 
+                stats={blogStats} 
+                incrementView={incrementView} 
+                toggleLike={toggleLike} 
+              />
+            } />
           </Routes>
         </main>
 
@@ -177,10 +286,85 @@ export default function App() {
 }
 
 // 📖 Dynamic Article Detail View Component
-function ArticleReader({ articles }) {
+function ArticleReader({ articles, stats, incrementView, toggleLike }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const article = articles.find(a => a.id === id);
+
+  const [hasLiked, setHasLiked] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [showFloatingBar, setShowFloatingBar] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (article) {
+      // Check local storage to see if the user has already liked this post
+      const likedKeys = JSON.parse(localStorage.getItem('liked_articles') || '[]');
+      setHasLiked(likedKeys.includes(article.id));
+
+      // Increment view count in session-based non-spam way
+      const sessionViewed = sessionStorage.getItem(`viewed_${article.id}`);
+      if (!sessionViewed) {
+        incrementView(article.id);
+        sessionStorage.setItem(`viewed_${article.id}`, 'true');
+      }
+    }
+  }, [article?.id]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const isMobile = window.innerWidth < 768;
+      // Show floating bar if scrolled past 180px on mobile
+      if (window.scrollY > 180 && isMobile) {
+        setShowFloatingBar(true);
+      } else {
+        setShowFloatingBar(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, []);
+
+  const handleLikeToggle = async () => {
+    if (!article || isUpdating) return;
+    setIsUpdating(true);
+
+    const nextLikedState = !hasLiked;
+    const success = await toggleLike(article.id, nextLikedState);
+
+    if (success) {
+      setHasLiked(nextLikedState);
+      const likedKeys = JSON.parse(localStorage.getItem('liked_articles') || '[]');
+      if (nextLikedState) {
+        if (!likedKeys.includes(article.id)) {
+          likedKeys.push(article.id);
+        }
+      } else {
+        const idx = likedKeys.indexOf(article.id);
+        if (idx > -1) likedKeys.splice(idx, 1);
+      }
+      localStorage.setItem('liked_articles', JSON.stringify(likedKeys));
+    }
+    setIsUpdating(false);
+  };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy link:', err);
+      });
+  };
 
   if (!article) {
     return (
@@ -209,8 +393,12 @@ function ArticleReader({ articles }) {
     );
   }
 
+  const articleStats = stats[article.id] || { views: 0, likes: 0 };
+  const displayViews = articleStats.views || 0;
+  const displayLikes = articleStats.likes || 0;
+
   return (
-    <article className="article-reader fade-in">
+    <article className="article-reader fade-in" style={{ position: 'relative' }}>
       <button className="article-back-btn font-mono" onClick={() => navigate('/blog')}>
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
@@ -253,6 +441,47 @@ function ArticleReader({ articles }) {
             </svg>
             {article.readingTime}
           </span>
+          <span style={{ opacity: 0.3 }}>·</span>
+          <span className="article-views" style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              className="lucide lucide-eye"
+              style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '0.25rem' }}
+            >
+              <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span>{displayViews} views</span>
+          </span>
+          <span style={{ opacity: 0.3 }}>·</span>
+          <button 
+            className={`like-btn font-mono ${hasLiked ? 'liked' : ''}`}
+            onClick={handleLikeToggle}
+            disabled={isUpdating}
+            title={hasLiked ? "Unlike this post" : "Like this post"}
+            style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill={hasLiked ? "currentColor" : "none"} 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              className="lucide lucide-heart"
+              style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '0.25rem', transition: 'transform 0.15s ease' }}
+            >
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+            <span>{displayLikes} likes</span>
+          </button>
         </div>
       </header>
 
@@ -262,6 +491,135 @@ function ArticleReader({ articles }) {
           __html: formatMarkdown(article.content) 
         }}
       />
+
+      {/* 🌟 End of article feedback card */}
+      <div className="article-feedback-card">
+        <h3 className="feedback-title">Thanks for reading!</h3>
+        <p className="feedback-subtitle">If you found this technical write-up helpful, support it by leaving a like or sharing the link.</p>
+        
+        <div className="feedback-actions">
+          <button 
+            className={`feedback-btn like-cta ${hasLiked ? 'liked' : ''}`}
+            onClick={handleLikeToggle}
+            disabled={isUpdating}
+            title={hasLiked ? "Unlike this article" : "Like this article"}
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="18" 
+              height="18" 
+              viewBox="0 0 24 24" 
+              fill={hasLiked ? "currentColor" : "none"} 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              className="lucide lucide-heart"
+            >
+              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+            </svg>
+            <span>{hasLiked ? 'Liked' : 'Like Post'} ({displayLikes})</span>
+          </button>
+
+          <button 
+            className={`feedback-btn share-cta ${copied ? 'copied' : ''}`}
+            onClick={handleShare}
+            title="Copy link to clipboard"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="18" 
+              height="18" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              className="lucide lucide-share2"
+            >
+              <circle cx="18" cy="5" r="3" />
+              <circle cx="6" cy="12" r="3" />
+              <circle cx="18" cy="19" r="3" />
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+            </svg>
+            <span>{copied ? 'Link Copied!' : 'Share Link'}</span>
+          </button>
+        </div>
+
+        <div className="feedback-footer">
+          <button className="feedback-back-link font-mono" onClick={() => navigate('/blog')}>
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              width="14" 
+              height="14" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '0.25rem' }}
+            >
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Back to writing</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 📱 Scroll-aware mobile floating bottom action bar */}
+      <div className={`mobile-floating-bar ${showFloatingBar ? 'visible' : ''}`}>
+        <div className="floating-bar-content">
+          <div className="floating-bar-info">
+            <div className="floating-bar-title">{article.title}</div>
+            <div className="floating-bar-meta font-mono">{displayViews} views · {article.readingTime}</div>
+          </div>
+
+          <div className="floating-bar-actions">
+            <button 
+              className={`floating-like-btn ${hasLiked ? 'liked' : ''}`}
+              onClick={handleLikeToggle}
+              disabled={isUpdating}
+              title={hasLiked ? "Unlike this article" : "Like this article"}
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill={hasLiked ? "currentColor" : "none"} 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                className="lucide lucide-heart"
+              >
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+              </svg>
+              <span>{displayLikes}</span>
+            </button>
+            
+            <button 
+              className={`floating-share-btn ${copied ? 'copied' : ''}`}
+              onClick={handleShare}
+              title="Copy link"
+            >
+              <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width="16" 
+                height="16" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+              >
+                <circle cx="18" cy="5" r="3" />
+                <circle cx="6" cy="12" r="3" />
+                <circle cx="18" cy="19" r="3" />
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </article>
   );
 }

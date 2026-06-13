@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-export default function BlogSection({ articles, limit }) {
+export default function BlogSection({ articles, limit, stats = {} }) {
   const displayArticles = limit ? articles.slice(0, limit) : articles;
 
   return (
@@ -28,6 +28,14 @@ export default function BlogSection({ articles, limit }) {
                 <span style={{ opacity: 0.3 }}>·</span>
                 <span className="blog-read-time" style={{ color: 'var(--muted-foreground)' }}>
                   {article.readingTime}
+                </span>
+                <span style={{ opacity: 0.3 }}>·</span>
+                <span className="blog-views" style={{ color: 'var(--muted-foreground)' }}>
+                  {stats[article.id]?.views || 0} views
+                </span>
+                <span style={{ opacity: 0.3 }}>·</span>
+                <span className="blog-likes" style={{ color: 'var(--muted-foreground)' }}>
+                  {stats[article.id]?.likes || 0} likes
                 </span>
               </div>
               
