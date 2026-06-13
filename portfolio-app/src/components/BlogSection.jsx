@@ -23,17 +23,17 @@ export default function BlogSection({ articles, limit, stats = {} }) {
             <article key={article.id} className="blog-item">
               <div className="blog-meta">
                 <span className="blog-category">{article.category}</span>
-                <span style={{ opacity: 0.3 }}>·</span>
+                <span className="meta-dot">·</span>
                 <span className="blog-date">{article.date}</span>
-                <span style={{ opacity: 0.3 }}>·</span>
+                <span className="meta-dot">·</span>
                 <span className="blog-read-time" style={{ color: 'var(--muted-foreground)' }}>
                   {article.readingTime}
                 </span>
-                <span style={{ opacity: 0.3 }}>·</span>
+                <span className="meta-dot">·</span>
                 <span className="blog-views" style={{ color: 'var(--muted-foreground)' }}>
                   {stats[article.id]?.views || 0} views
                 </span>
-                <span style={{ opacity: 0.3 }}>·</span>
+                <span className="meta-dot">·</span>
                 <span className="blog-likes" style={{ color: 'var(--muted-foreground)' }}>
                   {stats[article.id]?.likes || 0} likes
                 </span>

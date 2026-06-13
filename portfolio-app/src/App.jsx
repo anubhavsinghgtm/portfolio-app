@@ -78,7 +78,6 @@ const articles = Object.keys(blogFiles).map((path) => {
 // 🚀 Dynamic Scroll Reset & SEO Head Injection Component
 function ScrollToTopAndSEO({ articles }) {
   const { pathname } = useLocation();
-  const params = useParams();
 
   useEffect(() => {
     // 1. Scroll browser window to the top on every route navigation
@@ -115,7 +114,7 @@ function ScrollToTopAndSEO({ articles }) {
       document.head.appendChild(metaDesc);
     }
     metaDesc.setAttribute('content', description);
-  }, [pathname, params, articles]);
+  }, [pathname, articles]);
 
   return null;
 }
@@ -314,8 +313,10 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
   useEffect(() => {
     const handleScroll = () => {
       const isMobile = window.innerWidth < 768;
-      // Show floating bar if scrolled past 180px on mobile
-      if (window.scrollY > 180 && isMobile) {
+      const isNearBottom = (window.innerHeight + window.scrollY) >= (document.documentElement.scrollHeight - 380);
+      
+      // Show floating bar if scrolled past 180px on mobile and NOT near the bottom
+      if (window.scrollY > 180 && isMobile && !isNearBottom) {
         setShowFloatingBar(true);
       } else {
         setShowFloatingBar(false);
@@ -423,7 +424,7 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
         <h1 className="article-title">{article.title}</h1>
         <div className="article-meta">
           <span className="article-date">{article.date}</span>
-          <span style={{ opacity: 0.3 }}>·</span>
+          <span className="meta-dot">·</span>
           <span className="article-reading-time">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
@@ -441,7 +442,7 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
             </svg>
             {article.readingTime}
           </span>
-          <span style={{ opacity: 0.3 }}>·</span>
+          <span className="meta-dot">·</span>
           <span className="article-views" style={{ display: 'inline-flex', alignItems: 'center' }}>
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
@@ -459,7 +460,7 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
             </svg>
             <span>{displayViews} views</span>
           </span>
-          <span style={{ opacity: 0.3 }}>·</span>
+          <span className="meta-dot">·</span>
           <button 
             className={`like-btn font-mono ${hasLiked ? 'liked' : ''}`}
             onClick={handleLikeToggle}
@@ -494,8 +495,8 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
 
       {/* 🌟 End of article feedback card */}
       <div className="article-feedback-card">
-        <h3 className="feedback-title">Thanks for reading!</h3>
-        <p className="feedback-subtitle">If you found this technical write-up helpful, support it by leaving a like or sharing the link.</p>
+        <h3 className="feedback-title">Whoa, you read the whole thing!</h3>
+        <p className="feedback-subtitle">If this saved you an AI prompt, click that heart to boost your dev karma.</p>
         
         <div className="feedback-actions">
           <button 
