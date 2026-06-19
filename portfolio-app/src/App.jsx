@@ -233,6 +233,16 @@ function ScrollToTopAndSEO({ articles }) {
     }
     jsonLdScript.text = JSON.stringify(schema);
     document.head.appendChild(jsonLdScript);
+
+    // 5. Send pageview configuration to Google Analytics 4
+    const gaId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+    if (gaId && typeof window.gtag === 'function') {
+      window.gtag('config', gaId, {
+        page_path: pathname,
+        page_location: window.location.href,
+        page_title: title
+      });
+    }
   }, [pathname, articles]);
 
   return null;
