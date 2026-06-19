@@ -78,10 +78,12 @@ const articles = Object.keys(blogFiles).map((path) => {
 // 🚀 Dynamic Scroll Reset & SEO Head Injection Component
 function ScrollToTopAndSEO({ articles }) {
   const { pathname } = useLocation();
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     // 1. Scroll browser window to the top on every route navigation
     window.scrollTo(0, 0);
+    setScrollProgress(0); // Reset progress on route navigation
 
     // 2. Default standard SEO meta fallbacks
     let title = "Anubhav Singh — AI & Backend Engineer";
@@ -244,6 +246,37 @@ function ScrollToTopAndSEO({ articles }) {
       });
     }
   }, [pathname, articles]);
+
+  // Track scroll progress when on an article detail page
+  useEffect(() => {
+    const isArticlePage = pathname.startsWith('/blog/') && pathname !== '/blog';
+    if (!isArticlePage) return;
+
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        setScrollProgress((window.scrollY / totalHeight) * 100);
+      } else {
+        setScrollProgress(0);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+    
+    // Initial call in case page is loaded scrolled
+    handleScroll();
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [pathname]);
+
+  const isArticlePage = pathname.startsWith('/blog/') && pathname !== '/blog';
+  if (isArticlePage) {
+    return <div className="reading-progress-bar" style={{ width: `${scrollProgress}%` }} />;
+  }
 
   return null;
 }
@@ -423,7 +456,6 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showFloatingBar, setShowFloatingBar] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     if (article) {
@@ -450,15 +482,6 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
         setShowFloatingBar(true);
       } else {
         setShowFloatingBar(false);
-      }
-
-      // Calculate scroll progress percentage
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight > 0) {
-        const progress = (window.scrollY / totalHeight) * 100;
-        setScrollProgress(progress);
-      } else {
-        setScrollProgress(0);
       }
     };
 
@@ -539,7 +562,6 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
 
   return (
     <article className="article-reader fade-in" style={{ position: 'relative' }}>
-      <div className="reading-progress-bar" style={{ width: `${scrollProgress}%` }} />
       <button className="article-back-btn font-mono" onClick={() => navigate('/blog')}>
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
