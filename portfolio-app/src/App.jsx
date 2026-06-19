@@ -86,6 +86,8 @@ function ScrollToTopAndSEO({ articles }) {
     // 2. Default standard SEO meta fallbacks
     let title = "Anubhav Singh — AI & Backend Engineer";
     let description = "I engineer AI-powered analytics platforms and deep learning classification systems — orchestrating custom LLM flows with Gemini, FastAPI, and Astro.";
+    let pageType = "website";
+    let datePublished = null;
 
     // 3. Dynamic metadata overrides based on active browser pathname route
     if (pathname === '/projects') {
@@ -101,12 +103,27 @@ function ScrollToTopAndSEO({ articles }) {
       if (article) {
         title = `${article.title} — Anubhav Singh`;
         description = article.excerpt;
+        pageType = "article";
+        if (article.date) {
+          try {
+            const parsedDate = new Date(article.date);
+            if (!isNaN(parsedDate.getTime())) {
+              datePublished = parsedDate.toISOString().split('T')[0];
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
       }
     }
+
+    const pageUrl = `https://anubhavsinghgtm.com${pathname}`;
+    const defaultOgImage = "https://anubhavsinghgtm.com/og-image.png";
 
     // 4. Inject dynamically resolved tags directly into HTML head
     document.title = title;
 
+    // Meta Description
     let metaDesc = document.querySelector('meta[name="description"]');
     if (!metaDesc) {
       metaDesc = document.createElement('meta');
@@ -114,6 +131,108 @@ function ScrollToTopAndSEO({ articles }) {
       document.head.appendChild(metaDesc);
     }
     metaDesc.setAttribute('content', description);
+
+    // Canonical Link
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', pageUrl);
+
+    // Open Graph Tags
+    const ogTags = {
+      'og:title': title,
+      'og:description': description,
+      'og:url': pageUrl,
+      'og:type': pageType,
+      'og:image': defaultOgImage
+    };
+    Object.entries(ogTags).forEach(([property, content]) => {
+      let tag = document.querySelector(`meta[property="${property}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('property', property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    });
+
+    // Twitter Tags
+    const twitterTags = {
+      'twitter:card': 'summary_large_image',
+      'twitter:title': title,
+      'twitter:description': description,
+      'twitter:url': pageUrl,
+      'twitter:image': defaultOgImage
+    };
+    Object.entries(twitterTags).forEach(([name, content]) => {
+      let tag = document.querySelector(`meta[name="${name}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute('name', name);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    });
+
+    // Dynamic JSON-LD Schema
+    let jsonLdScript = document.getElementById('json-ld-seo');
+    if (jsonLdScript) {
+      jsonLdScript.remove(); // Clean up existing tag to prevent duplicate schemas
+    }
+    jsonLdScript = document.createElement('script');
+    jsonLdScript.id = 'json-ld-seo';
+    jsonLdScript.type = 'application/ld+json';
+
+    let schema = {};
+    if (pageType === 'article') {
+      schema = {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        'headline': title,
+        'description': description,
+        'image': defaultOgImage,
+        'datePublished': datePublished || new Date().toISOString().split('T')[0],
+        'author': {
+          '@type': 'Person',
+          'name': 'Anubhav Singh',
+          'url': 'https://anubhavsinghgtm.com'
+        },
+        'publisher': {
+          '@type': 'Person',
+          'name': 'Anubhav Singh'
+        },
+        'mainEntityOfPage': {
+          '@type': 'WebPage',
+          '@id': pageUrl
+        }
+      };
+    } else {
+      schema = {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        'name': 'Anubhav Singh',
+        'jobTitle': 'AI & Backend Engineer',
+        'url': 'https://anubhavsinghgtm.com',
+        'sameAs': [
+          'https://github.com/anubhavsinghgtm',
+          'https://www.linkedin.com/in/anubhavsinghgtm/'
+        ],
+        'knowsAbout': [
+          'Artificial Intelligence',
+          'Backend Engineering',
+          'LLMs',
+          'PostgreSQL',
+          'FastAPI',
+          'Vite',
+          'React'
+        ]
+      };
+    }
+    jsonLdScript.text = JSON.stringify(schema);
+    document.head.appendChild(jsonLdScript);
   }, [pathname, articles]);
 
   return null;
