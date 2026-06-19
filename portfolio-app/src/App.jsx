@@ -423,6 +423,7 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showFloatingBar, setShowFloatingBar] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     if (article) {
@@ -449,6 +450,15 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
         setShowFloatingBar(true);
       } else {
         setShowFloatingBar(false);
+      }
+
+      // Calculate scroll progress percentage
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        const progress = (window.scrollY / totalHeight) * 100;
+        setScrollProgress(progress);
+      } else {
+        setScrollProgress(0);
       }
     };
 
@@ -529,6 +539,7 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
 
   return (
     <article className="article-reader fade-in" style={{ position: 'relative' }}>
+      <div className="reading-progress-bar" style={{ width: `${scrollProgress}%` }} />
       <button className="article-back-btn font-mono" onClick={() => navigate('/blog')}>
         <svg 
           xmlns="http://www.w3.org/2000/svg" 

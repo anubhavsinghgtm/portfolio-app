@@ -47,17 +47,32 @@
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 4px;
+  border-radius: 9999px;
+  transition: background 0.3s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover);
+  background: var(--primary);
+}
+
+/* Reading Progress Bar */
+.reading-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(to right, var(--primary), var(--accent));
+  box-shadow: 0 0 8px var(--accent-glow-heavy);
+  z-index: 9999;
+  pointer-events: none;
+  transition: width 0.05s ease-out;
 }
 
 /* Main Layout Wrapper */
