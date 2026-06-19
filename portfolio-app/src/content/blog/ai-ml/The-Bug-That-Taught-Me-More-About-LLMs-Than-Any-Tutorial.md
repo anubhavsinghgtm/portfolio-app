@@ -9,7 +9,7 @@ excerpt: Debugging my AI analytics assistant Fluxora. The LLM just... stopped. H
 
 I was so confident.
 
-I had just finished building the insights feature for my AI analytics assitant - [Fluxora](https://anubhav-fluxora.streamlit.app/). You ask a question in plain english, it queries a real database, and then - this was the new part - it explains the results back to you in plain English. Like having a data analyst sitting next to you.
+I had just finished building the insights feature for my AI analytics assistant - [Fluxora](https://anubhav-fluxora.streamlit.app/). You ask a question in plain English, it queries a real database, and then - this was the new part - it explains the results back to you in plain English. Like having a data analyst sitting next to you.
 
 I tested it. Typed "show top 5 customers by total spend." 
 
@@ -24,7 +24,7 @@ Just silence. Mid-sentence. Like someone pulled the plug of my data analyst righ
 
 ## My first reaction - Classic developer move
 
-I did what every developer does. I assumed that I knew the problem without even diagnoisng it. 
+I did what every developer does. I assumed that I knew the problem without even diagnosing it. 
 
 "Oh it's probably the token limit. Let me increase it."
 
@@ -80,17 +80,17 @@ There it was. Two values. Two completely different situations.
 
 `FinishReason.STOP` means Gemini finished what it was saying naturally. Response is complete.
 
-`FinishReason.MAX_TOKENS` means Gemini hit the ceiling and got cut-off mid-sentence. Response is incompelte.
+`FinishReason.MAX_TOKENS` means Gemini hit the ceiling and got cut-off mid-sentence. Response is incomplete.
 
 I had been running into `MAX_TOKENS` every time at 200 and had no idea because I never looked.
 
 ## What I Actually Misunderstood About Tokens
 
-Before this I thought `max_output_tokens`work like a budget. Set it to 200, Gemini spends upto 200 tokens, done.
+Before this I thought `max_output_tokens` work like a budget. Set it to 200, Gemini spends up to 200 tokens, done.
 
 That's not how it works. 
 
-`max_output_tokens` is hard ceiling. Gemini will write as much as it needs to complete the response, and if it hits your ceiling before it's done, it's just stop. Mid-sentence, no error, no warning, just silence.
+`max_output_tokens` is a hard ceiling. Gemini will write as much as it needs to complete the response, and if it hits your ceiling before it's done, it will just stop. Mid-sentence, no error, no warning, just silence.
 
 So when I set 200 and Gemini needed 250 to finish, it wrote 200 tokens worth and stopped exactly there.
 
@@ -112,7 +112,7 @@ logger.info("Finish reason: %s", response.candidates[0].finish_reason)
 
 **2. Set max_output_tokens generously**
 
-It's a ceiling not a cost. Give the model room to finish its thought. You can always optimise later once you know what a typical response actually costs.
+It's a ceiling not a cost. Give the model room to finish its thought. You can always optimize later once you know what a typical response actually costs.
 
 ---
 
@@ -122,7 +122,7 @@ The hardest bugs in AI systems aren't exceptions, they're not 500 errors.
 
 They're responses that look almost right.
 
-A truncated insight looks like a short insight.The system doesn't fail loudly, it just returns less than you expected and moves on.
+A truncated insight looks like a short insight. The system doesn't fail loudly, it just returns less than you expected and moves on.
 
 That's what makes AI backend engineering different from regular backend work. You're not just handling code that breaks. You're handling a system that confidently returns incomplete answers.
 

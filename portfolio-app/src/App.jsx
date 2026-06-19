@@ -475,7 +475,7 @@ function ArticleReader({ articles, stats, incrementView, toggleLike }) {
   };
 
   const handleShare = () => {
-    const url = window.location.href;
+    const url = `https://anubhavsinghgtm.com/blog/${article.id}`;
     navigator.clipboard.writeText(url)
       .then(() => {
         setCopied(true);
