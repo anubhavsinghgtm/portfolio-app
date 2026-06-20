@@ -8,7 +8,7 @@ excerpt: A few weeks ago I wrote about debugging truncated responses from Gemini
 
 I thought I was done with this bug. 
 
-A few weeks ago I wrote about debugging truncated responses from Gemini; there we talked about `max_output_token` and `finish_reason` saga. I found the issue, fixed it, set tokens to 500, moved on. Wrote a whole post about it - [The Bug That Taught...](https://anubhavsinghgtm.com/blog/The-Bug-That-Taught-Me-More-About-LLMs-Than-Any-Tutorial). 
+A few weeks ago I wrote about debugging truncated responses from Gemini; there we talked about `max_output_token` and `finish_reason` saga. I found the issue, fixed it, set tokens to 500, moved on. Wrote a whole post about it - [The Bug That Taught...](/blog/The-Bug-That-Taught-Me-More-About-LLMs-Than-Any-Tutorial). 
 
 Then I added a new feature - query explanations alongside the SQL. The exact same bug came back. Same cutoff mid-sentence. At 500 tokens it was working fine earlier, but now we are facing the same issue again.
 
