@@ -121,7 +121,7 @@ function ScrollToTopAndSEO({ articles }) {
     }
 
     const pageUrl = `https://anubhavsinghgtm.com${pathname}`;
-    const defaultOgImage = "https://anubhavsinghgtm.com/og-image.png";
+    const defaultOgImage = "https://anubhavsinghgtm.com/og-image.jpg";
 
     // 4. Inject dynamically resolved tags directly into HTML head
     document.title = title;
