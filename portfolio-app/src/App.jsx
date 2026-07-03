@@ -4,8 +4,9 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Footer from './components/Footer';
 import projects from './content/projects.json';
-import Expertise from './components/Expertise';
 import { supabase } from './lib/supabaseClient';
+import AIChat from './components/AIChat';
+import ProjectSandbox from './components/ProjectSandbox';
 
 // Lazy-loaded routes/components to optimize initial bundle delivery
 const ProjectsGrid = lazy(() => import('./components/ProjectsGrid'));
@@ -365,7 +366,7 @@ export default function App() {
               <Route path="/" element={
                 <>
                   <Hero />
-                  <Expertise />
+                  <AIChat />
                   <ProjectsGrid projects={activeProjects} limit={3} />
                   
                   <div style={{ marginTop: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
@@ -399,7 +400,12 @@ export default function App() {
               } />
 
               {/* Standalone Projects Grid Route */}
-              <Route path="/projects" element={<ProjectsGrid projects={activeProjects} />} />
+              <Route path="/projects" element={
+                <>
+                  <ProjectsGrid projects={activeProjects} />
+                  <ProjectSandbox />
+                </>
+              } />
 
               {/* Standalone Blog List Route */}
               <Route path="/blog" element={<BlogSection articles={articles} stats={blogStats} />} />

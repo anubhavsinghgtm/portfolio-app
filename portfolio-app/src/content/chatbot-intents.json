@@ -1,0 +1,45 @@
+[
+  {
+    "intent": "fluxora",
+    "keywords": ["fluxora", "sql", "generator", "compiler", "analytics"],
+    "useProjectDescription": "fluxora",
+    "cta": {
+      "label": "Fluxora SQL Generator",
+      "sandbox": "fluxora"
+    }
+  },
+  {
+    "intent": "pulse",
+    "keywords": ["pulse", "vaccine", "lstm", "nlp", "lime", "tweet", "classification"],
+    "useProjectDescription": "pulse",
+    "cta": {
+      "label": "PULSE Sentiment AI",
+      "sandbox": "pulse"
+    }
+  },
+  {
+    "intent": "skills",
+    "keywords": ["skills", "technology", "competence", "stack", "languages", "programming"],
+    "response": "Here is a breakdown of my engineering core competencies:\n\n• Languages: Python, SQL, JavaScript, HTML/CSS\n• AI/GenAI: PyTorch, Gemini API, NLP, Nested LSTMs, Transformers, LIME (Explainable AI)\n• Backend: FastAPI, PostgreSQL, Supabase, Docker, Pytest, REST APIs, Microservices\n• Frontend: Astro, React, Tailwind CSS"
+  },
+  {
+    "intent": "contact",
+    "keywords": ["contact", "email", "reach", "social", "address", "phone", "linkedin", "github"],
+    "response": "I'd love to connect! You can reach me at:\n\n• Email: anubhavsinghgtm@gmail.com\n• GitHub: github.com/anubhavsinghgtm\n• LinkedIn: linkedin.com/in/anubhavsinghgtm"
+  },
+  {
+    "intent": "datetime",
+    "keywords": ["date", "time", "today", "clock", "current date", "current time"],
+    "dynamicType": "datetime"
+  },
+  {
+    "intent": "about",
+    "keywords": ["about", "yourself", "who is", "help", "background", "hello", "hi"],
+    "responses": [
+      "Hi! I'm Anubhav Singh, a Software Engineer 2 at Dell Technologies. I specialize in building robust backend microservices with FastAPI and orchestrating Generative AI pipelines with Gemini. Ask me about my skills or projects!",
+      "Hi! I'm Anubhav Singh, a Backend & AI Engineer with 3+ years of experience. I focus on training deep learning models (PyTorch) and constructing scalable, resilient API backends. Let me know what you'd like to know!",
+      "Hello! I'm Anubhav Singh. I engineer AI-powered analytics (like Fluxora) and deep learning systems (like PULSE). I am passionate about backend performance, SQL compilers, and explainable AI. Ask me about my skills or check out my work!",
+      "Hey! Anubhav here. I'm an AI & Backend Engineer. I specialize in FastAPI, PostgreSQL database design, and neural network classification. Ask me anything about my tech stack or projects!"
+    ]
+  }
+]
