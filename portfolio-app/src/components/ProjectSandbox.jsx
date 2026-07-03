@@ -24,12 +24,19 @@ export default function ProjectSandbox() {
 
   useEffect(() => {
     if (location.state?.activeSandbox) {
-      setSubTab(location.state.activeSandbox);
-      setTimeout(() => {
+      const target = location.state.activeSandbox;
+      setSubTab(target);
+      
+      const timer = setTimeout(() => {
         if (sandboxRef.current) {
           sandboxRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      }, 150);
+      }, 350);
+
+      // Clear the router state to avoid re-triggering the scroll effect on future component updates
+      window.history.replaceState({}, document.title);
+      
+      return () => clearTimeout(timer);
     }
   }, [location]);
 
@@ -37,6 +44,7 @@ export default function ProjectSandbox() {
   const [fluxoraInput, setFluxoraInput] = useState('Find all projects tagged with Gemini');
   const [fluxoraSQL, setFluxoraSQL] = useState('');
   const [fluxoraResults, setFluxoraResults] = useState(null);
+  const [fluxoraInsight, setFluxoraInsight] = useState('');
   const [isFluxoraRunning, setIsFluxoraRunning] = useState(false);
 
   // PULSE Sandbox state
@@ -51,29 +59,36 @@ export default function ProjectSandbox() {
     setIsFluxoraRunning(true);
     setFluxoraSQL('');
     setFluxoraResults(null);
+    setFluxoraInsight('');
 
     await new Promise((r) => setTimeout(r, 650));
 
     const cleanPrompt = prompt.toLowerCase();
     let querySQL = '';
     let resultsData = [];
+    let insightStr = '';
 
     if (cleanPrompt.includes('gemini') || cleanPrompt.includes('projects')) {
       querySQL = "SELECT title, tags, github FROM projects WHERE tags @> ARRAY['Gemini'];";
       resultsData = MOCK_PROJECTS.filter(p => p.tags.includes('Gemini'));
+      insightStr = `Found 2 matching projects: 'Fluxora' (an AI-powered SQL generator) and 'PULSE' (an explainable deep NLP sentiment classifier). Both utilize Gemini or advanced NLP layers.`;
     } else if (cleanPrompt.includes('skills') || cleanPrompt.includes('rating') || cleanPrompt.includes('above 90')) {
       querySQL = "SELECT name, category, rating FROM skills WHERE rating > 90 ORDER BY rating DESC;";
       resultsData = MOCK_SKILLS.filter(s => s.rating > 90);
+      insightStr = `Found 4 core skills matching rating > 90%: FastAPI (95%), Python (94%), Generative AI (92%), and PostgreSQL (92%).`;
     } else if (cleanPrompt.includes('fastapi') || cleanPrompt.includes('backend')) {
       querySQL = "SELECT title, github FROM projects WHERE tags @> ARRAY['FastAPI'];";
       resultsData = MOCK_PROJECTS.filter(p => p.tags.includes('FastAPI')).map(p => ({ title: p.title, github: p.github }));
+      insightStr = `Found 1 backend project built with FastAPI: 'Fluxora' (Anubhav's flagship SQL analytics platform).`;
     } else {
       querySQL = `SELECT title, tags FROM projects WHERE title ILIKE '%${prompt.replace(/'/g, "''")}%';`;
       resultsData = MOCK_PROJECTS.filter(p => p.title.toLowerCase().includes(cleanPrompt)).map(p => ({ title: p.title, tags: p.tags }));
+      insightStr = `Retrieved ${resultsData.length} database entries matching keyword filter '${prompt}'.`;
     }
 
     setFluxoraSQL(querySQL);
     setFluxoraResults(resultsData);
+    setFluxoraInsight(insightStr);
     setIsFluxoraRunning(false);
   };
 
@@ -230,7 +245,19 @@ export default function ProjectSandbox() {
         <div className="sandbox-tab-content-area">
           {/* FLUXORA PLAYGROUND */}
           {subTab === 'fluxora' && (
-            <div className="fluxora-grid-view">
+            <>
+              {/* Project External Links */}
+              <div className="sandbox-project-links">
+                <span className="sandbox-links-label">Project Details:</span>
+                <a href="https://anubhav-fluxora.streamlit.app/" target="_blank" rel="noopener noreferrer" className="sandbox-external-link">
+                  🌐 Live Application ↗
+                </a>
+                <span style={{ color: 'rgba(255,255,255,0.15)' }}>&middot;</span>
+                <a href="https://github.com/anubhavsinghgtm/fluxora" target="_blank" rel="noopener noreferrer" className="sandbox-external-link">
+                  📁 Source Code ↗
+                </a>
+              </div>
+              <div className="fluxora-grid-view">
               <div className="fluxora-schema-panel">
                 <div className="schema-entity">
                   <span className="schema-entity-name">📁 projects</span>
@@ -300,6 +327,13 @@ export default function ProjectSandbox() {
                   </div>
                 )}
 
+                {!isFluxoraRunning && fluxoraInsight && (
+                  <div className="sandbox-insight-panel" style={{ animation: 'fadeIn 0.3s ease forwards' }}>
+                    <div className="insight-header">ℹ️ Query Results Summary</div>
+                    <p className="insight-text">{fluxoraInsight}</p>
+                  </div>
+                )}
+
                 {!isFluxoraRunning && fluxoraSQL && (
                   <div className="sandbox-sql-card" style={{ animation: 'fadeIn 0.3s ease forwards' }}>
                     <div className="sql-card-header">Generated SQL Code</div>
@@ -364,11 +398,20 @@ export default function ProjectSandbox() {
                 )}
               </div>
             </div>
-          )}
+          </>
+        )}
 
           {/* PULSE PLAYGROUND */}
           {subTab === 'pulse' && (
-            <div className="pulse-workspace">
+            <>
+              {/* Project External Links */}
+              <div className="sandbox-project-links">
+                <span className="sandbox-links-label">Project Details:</span>
+                <a href="https://github.com/anubhavsinghgtm/pulse" target="_blank" rel="noopener noreferrer" className="sandbox-external-link">
+                  📁 Source Code ↗
+                </a>
+              </div>
+              <div className="pulse-workspace">
               <p className="pulse-summary-text">
                 Analyzes narratives using a multi-label deep classifier (Nested LSTM / XLM-RoBERTa) and provides LIME explanation contribution heatmaps.
               </p>
@@ -461,7 +504,8 @@ export default function ProjectSandbox() {
                 </div>
               )}
             </div>
-          )}
+          </>
+        )}
         </div>
       </div>
     </section>
