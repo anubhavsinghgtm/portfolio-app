@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 
-export default function Navbar() {
+export default function Navbar({ onOpenCmd }) {
   const location = useLocation();
   const [isHidden, setIsHidden] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -96,6 +96,14 @@ export default function Navbar() {
                 </NavLink>
               );
             })}
+
+            <button 
+              className="navbar-cmd-btn font-mono"
+              onClick={onOpenCmd}
+              title="Open Command Palette (⌘K)"
+            >
+              <span>⌘K</span>
+            </button>
           </nav>
         </div>
       </header>

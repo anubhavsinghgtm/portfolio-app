@@ -7,6 +7,7 @@ import projects from './content/projects.json';
 import { supabase } from './lib/supabaseClient';
 import AIChat from './components/AIChat';
 import ProjectSandbox from './components/ProjectSandbox';
+import CommandPalette from './components/CommandPalette';
 
 // Lazy-loaded routes/components to optimize initial bundle delivery
 const ProjectsGrid = lazy(() => import('./components/ProjectsGrid'));
@@ -256,6 +257,20 @@ export default function App() {
   // Filter out draft projects so only published projects appear on the live site
   const activeProjects = projects.filter(project => project.draft !== true);
 
+  const [isCmdOpen, setIsCmdOpen] = useState(false);
+
+  // Global Cmd+K / Ctrl+K keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCmdOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const [blogStats, setBlogStats] = useState({}); // { [articleId]: { views: 0, likes: 0 } }
 
   // Fetch all stats on mount
@@ -351,8 +366,13 @@ export default function App() {
   return (
     <Router>
       <ScrollToTopAndSEO articles={articles} />
+      <CommandPalette 
+        isOpen={isCmdOpen} 
+        onClose={() => setIsCmdOpen(false)} 
+        articles={articles} 
+      />
       <div className="app-container">
-        <Navbar />
+        <Navbar onOpenCmd={() => setIsCmdOpen(true)} />
 
         <main className="main-content">
           <Suspense fallback={
