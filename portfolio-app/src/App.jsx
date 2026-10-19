@@ -29,7 +29,7 @@ function calculateReadingTime(content) {
 // Frontmatter Metadata parser for standard Git-based Markdown pipelines
 function parseMarkdownPost(rawText, filepath) {
   const filename = filepath.split('/').pop() || filepath;
-  const id = filename.replace(/\.md$/, '');
+  const id = filename.replace(/(\.md)+$/, '');
   
   // Regex to isolate Frontmatter block (everything enclosed within starting and ending --- lines)
   const match = rawText.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);

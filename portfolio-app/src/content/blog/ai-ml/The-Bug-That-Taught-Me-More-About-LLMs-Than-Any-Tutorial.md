@@ -3,7 +3,7 @@ title: The Bug That Taught Me More About LLMs Than Any Tutorial
 category: AI & Machine Learning
 date: June 07, 2026
 draft: false
-tags: LLMs, Gemini, Debugging, AI Engineering, Python
+tags: LLMs, Gemini, AI Engineering, Python
 excerpt: Debugging my AI analytics assistant Fluxora. The LLM just... stopped. Here's what I learned about prompt engineering, context length, and why LLM debugging is fundamentally different from traditional software.
 ---
 

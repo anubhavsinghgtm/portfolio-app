@@ -2,6 +2,7 @@
 title: The Invisible Tokens That Broke My AI — And Took Two Debugging Sessions To Find
 category: AI & Machine Learning
 date: June 13, 2026
+tags: LLMs, Gemini, AI Engineering, Python
 draft: false
 excerpt: A few weeks ago I wrote about debugging truncated responses from Gemini. I thought I fixed that bug, but a new feature exposed it again. This is what happened next.
 ---
