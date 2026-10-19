@@ -208,7 +208,23 @@ export default function ArticleReader({ articles, stats, incrementView, toggleLi
       </button>
 
       <header className="article-header">
-        <div className="article-category">{article.category}</div>
+        <div className="article-category-row">
+          <div className="article-category">{article.category}</div>
+          {article.tags && article.tags.length > 0 && (
+            <div className="article-tags">
+              {article.tags.map(tag => (
+                <button
+                  key={tag}
+                  className="article-tag-pill"
+                  onClick={() => navigate(`/blog/tag/${encodeURIComponent(tag)}`)}
+                  title={`View all posts tagged #${tag}`}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <h1 className="article-title">{article.title}</h1>
         <div className="article-meta">
           <span className="article-date">{article.date}</span>

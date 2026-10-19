@@ -39,6 +39,7 @@ function parseMarkdownPost(rawText, filepath) {
       id,
       title: id.replace(/-/g, ' '),
       category: 'General',
+      tags: [],
       date: 'Recent',
       readingTime: calculateReadingTime(rawText),
       draft: 'false',
@@ -60,10 +61,17 @@ function parseMarkdownPost(rawText, filepath) {
     }
   });
 
+  // Parse tags: comma-separated string -> trimmed array
+  const rawTags = metadata.tags || '';
+  const tags = rawTags
+    ? rawTags.split(',').map(t => t.trim()).filter(Boolean)
+    : [];
+
   return {
     id,
     title: metadata.title || id.replace(/-/g, ' '),
     category: metadata.category || 'General',
+    tags,
     date: metadata.date || 'Recent',
     readingTime: metadata.readingTime || calculateReadingTime(content),
     draft: metadata.draft || 'false',
@@ -101,6 +109,10 @@ function ScrollToTopAndSEO({ articles }) {
     } else if (pathname === '/blog') {
       title = "Notes & Writing — Anubhav Singh";
       description = "Technical guides, deep dives, and learning summaries about database partitioning, LLM compilers, and resilient API backend scaling.";
+    } else if (pathname.startsWith('/blog/tag/')) {
+      const tag = decodeURIComponent(pathname.split('/').pop());
+      title = `#${tag} — Anubhav Singh`;
+      description = `All posts tagged with "${tag}" by Anubhav Singh.`;
     } else if (pathname.startsWith('/blog/')) {
       // Parse active blog path ID parameters
       const blogId = pathname.split('/').pop();
@@ -387,21 +399,6 @@ export default function App() {
                 <>
                   <Hero />
                   <AIChat />
-                  <ProjectsGrid projects={activeProjects} limit={3} />
-                  
-                  <div style={{ marginTop: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
-                    <Link 
-                      to="/projects"
-                      className="font-mono text-sm inline-flex items-center gap-[0.35rem] text-[var(--primary)] font-medium hover:text-[var(--accent)] transition-colors"
-                    >
-                      <span>View all projects</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
-                    </Link>
-                  </div>
-
                   <BlogSection articles={articles} stats={blogStats} limit={3} />
                   
                   <div style={{ marginTop: '3.5rem', display: 'flex', justifyContent: 'flex-start' }}>
@@ -410,6 +407,21 @@ export default function App() {
                       className="font-mono text-sm inline-flex items-center gap-[0.35rem] text-[var(--primary)] font-medium hover:text-[var(--accent)] transition-colors"
                     >
                       <span>View all writing</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </Link>
+                  </div>
+
+                  <ProjectsGrid projects={activeProjects} limit={3} />
+                  
+                  <div style={{ marginTop: '5rem', display: 'flex', justifyContent: 'flex-start' }}>
+                    <Link 
+                      to="/projects"
+                      className="font-mono text-sm inline-flex items-center gap-[0.35rem] text-[var(--primary)] font-medium hover:text-[var(--accent)] transition-colors"
+                    >
+                      <span>View all projects</span>
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>
@@ -429,6 +441,9 @@ export default function App() {
 
               {/* Standalone Blog List Route */}
               <Route path="/blog" element={<BlogSection articles={articles} stats={blogStats} />} />
+
+              {/* Tag-filtered Blog List Route */}
+              <Route path="/blog/tag/:tag" element={<BlogSection articles={articles} stats={blogStats} />} />
 
               {/* Dynamic Blog Article Reading Route */}
               <Route path="/blog/:id" element={
